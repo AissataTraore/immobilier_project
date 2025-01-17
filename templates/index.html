@@ -25,7 +25,10 @@
                 <td>{{ customer.id }}</td>
                 <td>{{ customer.nom }}</td>
                 <td>{{ customer.prenom }}</td>
-                <td><a href="edit/{{ customer.id }}"><button>Modifier</button></a></td>
+                <td>
+                    <a href="edit/{{ customer.id }}"><button>Modifier</button></a>
+                    <a href="javascript:void(0);" onclick="confirmDelete({{ customer.id }})"><button>Supprimer</button></a>
+                </td>
 
             </tr>
             {% endfor %}
@@ -52,5 +55,13 @@
     </div>
 
 </body>
+<script>
+    function confirmDelete(customerId) {
+        if (confirm("Êtes-vous sûr de vouloir supprimer ce client ?")) {
+            window.location.href = "/delete/" + customerId;
+        }
+    }
+</script>
+
 
 </html>

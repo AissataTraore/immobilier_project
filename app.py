@@ -8,7 +8,7 @@ app = Flask(__name__)
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'  # Utilisateur MySQL
 app.config['MYSQL_PASSWORD'] = ''  # Mot de passe MySQL
-app.config['MYSQL_DB'] = 'customer_base'  # Base de données MySQL
+app.config['MYSQL_DB'] = 'customers_base'  # Base de données MySQL
 # mysql = MySQL(app)
 
 # Initialisation de l'extension MySQL
@@ -58,20 +58,26 @@ def add_client_form ():
         cur.connection.commit()
         return redirect(url_for('list_customers'))
 
-@app.route('/edit/<int:id>', methods=['GET, POST'])
-def edit_form(id):
+@app.route('/edit/<int:id>', methods=['GET', 'POST'])
+def edit_form(id, nom = None, prenom = None):
+    cur = get_db().cursor()
     if request.method == 'GET':
-        cur = get_db().cursor()
         cur.execute("SELECT * FROM client WHERE id = %s", (id,))
         customer = cur.fetchone()
         return render_template('edit.html', customer=customer)
     elif request.method == 'POST':
         nom = request.form['nom']
         prenom = request.form['prenom']
-        cur = get_db().cursor()
         cur.execute("UPDATE client SET nom=%s, prenom=%s WHERE id=%s", (nom, prenom, id))
         cur.connection.commit()
         return redirect(url_for('list_customers')) 
+    
+@app.route('/delete/<int:id>', methods=['GET'])
+def delete_customer(id):
+    cur = get_db().cursor()
+    cur.execute("DELETE FROM client WHERE id = %s", (id))
+    cur.connection.commit()
+    return redirect(url_for('list_customers'))
 
 if __name__ == '__main__':
     app.run(debug=True)

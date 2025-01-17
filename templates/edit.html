@@ -7,11 +7,11 @@
 </head>
 <body>
     <h1>Modifier</h1>
-    <form action="/edit" method="POST">
+    <form action="/edit/{{ customer.id }}" method="POST">
         <input type="hidden" name="id" value="{{ customer.id }}" required>
         <input type="text" name="nom" placeholder="Nom" value="{{ customer.nom }}" required>
         <input type="text" name="prenom" placeholder="Prénom" value="{{ customer.prenom }}" required>
-        <button type="submit">Ajouter</button>
+        <button type="submit">Modifier</button>
     </form>
 </body>
 </html>
