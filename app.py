@@ -1,7 +1,7 @@
 
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 import pymysql
-from flask_sqlalchemy import SQLAlchemy
+#from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 
 
@@ -137,15 +137,12 @@ def predict():
         
         # Décomposer en semi_furnished_value et unfurnished_value
         if semi_furnished_value == '10':
-            # Semi-meublé : '10' -> semi_furnished_value = 1, unfurnished_value = 0
             data.append(1)  # Semi-meublé -> semi_furnished_value = 1
             data.append(0)  # Non-meublé -> unfurnished_value = 0
         elif semi_furnished_value == '01':
-            # Non-meublé : '01' -> semi_furnished_value = 0, unfurnished_value = 1
             data.append(0)  # Non-meublé -> semi_furnished_value = 0
             data.append(1)  # Non-meublé -> unfurnished_value = 1
         else:
-            # Meublé : '00' -> semi_furnished_value = 0, unfurnished_value = 0
             data.append(0)  # Meublé -> semi_furnished_value = 0
             data.append(0)  # Meublé -> unfurnished_value = 0
 
@@ -154,6 +151,33 @@ def predict():
         
         # Faire la prédiction
         prediction = lm.predict(data)[0]
+        
+        prediction_fcfa = prediction * 7
+
+        # Insérer les détails dans la base de données
+        cur = get_db().cursor()
+        cur.execute("""
+            INSERT INTO houseDetails (area, bedrooms, bathrooms, stories, mainroad, guestroom, 
+                                      basement, hotwaterheating, airconditioning, parking, prefarea, 
+                                      semi_furnished, unfurnished, price) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            form.area.data, 
+            form.bedrooms.data, 
+            form.bathrooms.data, 
+            form.stories.data, 
+            form.mainroad.data, 
+            form.guestroom.data, 
+            form.basement.data, 
+            form.hotwaterheating.data, 
+            form.airconditioning.data, 
+            form.parking.data, 
+            form.prefarea.data, 
+            1 if semi_furnished_value == '10' else 0, 
+            1 if semi_furnished_value == '01' else 0, 
+            prediction_fcfa
+        ))
+        cur.connection.commit()
 
         return render_template('result.html', prediction=prediction)
 
